@@ -1,6 +1,8 @@
 package org.iainhull.funckats.types
 
-class Currency private (val code: String) extends AnyVal
+class Currency private (val code: String) extends AnyVal {
+  override def toString: String = s"Currency($code)"
+}
 
 /**
   * Currency utilities
