@@ -1,8 +1,8 @@
 package org.iainhull.funckats.types
 
 import org.scalactic.Or
-import org.scalactic.TypeCheckedTripleEquals._
 import org.scalactic.Requirements._
+import org.scalactic.TypeCheckedTripleEquals._
 
 /**
   * Created by iain.hull on 21/12/2015.
@@ -96,7 +96,7 @@ trait OrderService {
     val convert = Currency.convert(order.currency, newCurrency) _
 
     val newItems = order.items.map { item =>
-       item.copy(price = convert(item.price))
+      item.copy(price = convert(item.price))
     }
 
     order.copy(
@@ -131,7 +131,7 @@ trait OrderService {
     require(items.nonEmpty)
 
     items.map { o => o.price * o.quantity }
-         .sum
+      .sum
   }
 
   def calculateDelivery(items: Int, currency: String): BigDecimal = {

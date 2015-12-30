@@ -3,29 +3,34 @@ package org.iainhull.funckats.types
 import org.scalactic.{Bad, Good}
 
 /**
-  * Created by iain.hull on 28/12/2015.
+  * Unit test for the OrderService
   */
-class OrderServiceSpec extends ServiceSpec with OrderService {
-  val catalog = Map(
-    "a" -> (BigDecimal(10), "USD"),
-    "b" -> (BigDecimal(20), "USD"),
-    "c" -> (BigDecimal(30), "USD"),
-    "d" -> (BigDecimal(40), "USD"))
+class OrderServiceSpec extends BasicSpec {
 
-  override val productService = { (productId: String, quantity: Int) =>
-    catalog.get(productId) match {
-      case Some(value) => Good(value)
-      case None => Bad(InvalidProduct(productId))
+  object TestOrderService extends OrderService {
+    val catalog = Map(
+      "a" ->(BigDecimal(10), "USD"),
+      "b" ->(BigDecimal(20), "USD"),
+      "c" ->(BigDecimal(30), "USD"),
+      "d" ->(BigDecimal(40), "USD"))
+
+    override val productService = { (productId: String, quantity: Int) =>
+      catalog.get(productId) match {
+        case Some(value) => Good(value)
+        case None => Bad(InvalidProduct(productId))
+      }
+    }
+
+    override val paymentService = { (customer: Customer, currency: String, amount: BigDecimal) =>
+      if (currency == "USD") {
+        Good(Payment(currency, amount, customer.name))
+      } else {
+        Bad(PaymentError(s"Cannot process payment for ${customer.name}"))
+      }
     }
   }
 
-  override val paymentService = { (customer: Customer, currency: String, amount: BigDecimal) =>
-    if (currency == "USD") {
-      Good(Payment(currency, amount, customer.name))
-    } else {
-      Bad(PaymentError(s"Cannot process payment for ${customer.name}"))
-    }
-  }
+  import TestOrderService._
 
   val theCustomer = Customer("Joe Blogs", "EUR")
 
@@ -45,7 +50,7 @@ class OrderServiceSpec extends ServiceSpec with OrderService {
 
   it should "fail to create an order when the product id is invalid" in {
     val maybeOrder = createOrder(theCustomer, "bad product", 2)
-    maybeOrder should be (Bad(InvalidProduct("bad product")))
+    maybeOrder should be(Bad(InvalidProduct("bad product")))
   }
 
   it should "throw IllegalArgumentException if the quantity is less than 0" in {
@@ -57,7 +62,7 @@ class OrderServiceSpec extends ServiceSpec with OrderService {
   "addItem" should "add an item to the order when the product id is valid" in {
 
     val Good(o1) = createOrder(theCustomer, "a", 2)
-    val maybeOrder = addItem(o1,"b", 3)
+    val maybeOrder = addItem(o1, "b", 3)
 
     inside(maybeOrder) {
       case Good(Order(customer, subtotal, shipping, currency, Vector(i1, i2))) =>
@@ -79,7 +84,7 @@ class OrderServiceSpec extends ServiceSpec with OrderService {
     val Good(o1) = createOrder(theCustomer, "a", 2)
     val maybeOrder = addItem(o1, "bad product", 2)
 
-    maybeOrder should be (Bad(InvalidProduct("bad product")))
+    maybeOrder should be(Bad(InvalidProduct("bad product")))
   }
 
   it should "throw IllegalArgumentException when the quantity is less than 0" in {
@@ -120,13 +125,13 @@ class OrderServiceSpec extends ServiceSpec with OrderService {
   "checkout" should "return a sale when the payment is valid" in {
 
     val Good(o1) = createOrder(theCustomer, "a", 2)
-    val Good(o2) = addItem(o1,"b", 3)
+    val Good(o2) = addItem(o1, "b", 3)
     val theOrder = changeCurrency(o2, "USD")
 
     val maybeSale = checkout(theOrder)
 
     inside(maybeSale) {
-      case Good(Sale(order, payment, creditCardCharge))=>
+      case Good(Sale(order, payment, creditCardCharge)) =>
         order should be(theOrder)
         payment.amount should be(order.subtotal + order.shipping)
         payment.amount should be(BigDecimal(90))
@@ -137,10 +142,10 @@ class OrderServiceSpec extends ServiceSpec with OrderService {
   it should "fail when the payment failes" in {
 
     val Good(o1) = createOrder(theCustomer, "a", 2)
-    val Good(theOrder) = addItem(o1,"b", 3)
+    val Good(theOrder) = addItem(o1, "b", 3)
 
     val maybeSale = checkout(theOrder)
 
-    maybeSale should be (Bad(PaymentError("Cannot process payment for Joe Blogs")))
+    maybeSale should be(Bad(PaymentError("Cannot process payment for Joe Blogs")))
   }
 }

@@ -25,7 +25,7 @@ case class OrderItem(productId: String,
                      price: BigDecimal,
                      quantity: Int) {
   require(price >= 0)
-  require(quantity >= 0)
+  require(quantity > 0)
 }
 
 case class Sale(order: Order,
@@ -38,5 +38,7 @@ case class Sale(order: Order,
 case class Payment(currency: String, amount: BigDecimal, reference: String)
 
 trait OrderError
+
 case class InvalidProduct(productId: String) extends OrderError
+
 case class PaymentError(message: String) extends OrderError

@@ -3,7 +3,8 @@ package org.iainhull.funckats.types
 /**
   * Created by iain.hull on 20/12/2015.
   */
-class CurrencyServiceSpec extends ServiceSpec {
+class CurrencyServiceSpec extends BasicSpec {
+
   object TestCurrency extends AbstractCurrencyHelper {
     override val rates = Map(
       "USD" -> BigDecimal("1"),
@@ -23,10 +24,10 @@ class CurrencyServiceSpec extends ServiceSpec {
   }
 
   it should "not convert invalid currencies" in {
-    an [IllegalArgumentException] should be thrownBy {
+    an[IllegalArgumentException] should be thrownBy {
       convert("SFO", "EUR")(BigDecimal("1"))
     }
-    an [IllegalArgumentException] should be thrownBy {
+    an[IllegalArgumentException] should be thrownBy {
       convert("EUR", "SFO")(BigDecimal("1"))
     }
   }
