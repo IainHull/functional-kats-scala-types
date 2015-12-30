@@ -1,6 +1,6 @@
 package org.iainhull.funckats.types
 
-import org.scalactic.{Bad, Good}
+import org.scalactic.{Bad, Good }
 
 /**
   * Unit test for the OrderService
@@ -9,10 +9,10 @@ class OrderServiceSpec extends BasicSpec {
 
   object TestOrderService extends OrderService {
     val catalog = Map(
-      "a" -> ((BigDecimal(10), "USD")),
-      "b" -> ((BigDecimal(20), "USD")),
-      "c" -> ((BigDecimal(30), "USD")),
-      "d" -> ((BigDecimal(40), "USD")))
+      "a" -> ((BigDecimal(10), Currency.USD)),
+      "b" -> ((BigDecimal(20), Currency.USD)),
+      "c" -> ((BigDecimal(30), Currency.USD)),
+      "d" -> ((BigDecimal(40), Currency.USD)))
 
     override val productService = { (productId: String, quantity: Int) =>
       catalog.get(productId) match {
@@ -21,8 +21,8 @@ class OrderServiceSpec extends BasicSpec {
       }
     }
 
-    override val paymentService = { (customer: Customer, currency: String, amount: BigDecimal) =>
-      if (currency == "USD") {
+    override val paymentService = { (customer: Customer, currency: Currency, amount: BigDecimal) =>
+      if (currency == Currency.USD) {
         Good(Payment(currency, amount, customer.name))
       } else {
         Bad(PaymentError(s"Cannot process payment for ${customer.name}"))
@@ -32,7 +32,7 @@ class OrderServiceSpec extends BasicSpec {
 
   import TestOrderService._
 
-  val theCustomer = Customer("Joe Blogs", "EUR")
+  val theCustomer = Customer("Joe Blogs", Currency.EUR)
 
   "createOrder" should "create an order when the product id is valid" in {
     val maybeOrder = createOrder(theCustomer, "a", 2)
@@ -41,7 +41,7 @@ class OrderServiceSpec extends BasicSpec {
         customer should be(theCustomer)
         subtotal should be(BigDecimal("18.4020"))
         shipping should be(BigDecimal("3.68040"))
-        currency should be("EUR")
+        currency should be(Currency.EUR)
         item.productId should be("a")
         item.price should be(BigDecimal("9.2010"))
         item.quantity should be(2)
@@ -69,7 +69,7 @@ class OrderServiceSpec extends BasicSpec {
         customer should be(theCustomer)
         subtotal should be(BigDecimal("73.608"))
         shipping should be(BigDecimal("9.201000"))
-        currency should be("EUR")
+        currency should be(Currency.EUR)
         i1.productId should be("a")
         i1.price should be(BigDecimal("9.20100"))
         i1.quantity should be(2)
@@ -97,28 +97,20 @@ class OrderServiceSpec extends BasicSpec {
 
   "changeCurrency" should "change the currency of an order applying the fx rate" in {
 
-    val convert = Currency.convert("EUR", "USD") _
+    val convert = Currency.convert(Currency.EUR, Currency.USD) _
     val Good(o1) = createOrder(theCustomer, "a", 2)
 
-    val order = changeCurrency(o1, "USD")
+    val order = changeCurrency(o1, Currency.USD)
 
     inside(order) {
       case Order(customer, subtotal, shipping, currency, Vector(i1)) =>
         customer should be(o1.customer)
         subtotal should be(convert(o1.subtotal))
         shipping should be(convert(o1.shipping))
-        currency should be("USD")
+        currency should be(Currency.USD)
         i1.price should be(convert(o1.items(0).price))
         i1.productId should be(o1.items(0).productId)
         i1.quantity should be(o1.items(0).quantity)
-    }
-  }
-
-  it should "throw IllegalArgumentException when the currency is invalid" in {
-    val Good(o1) = createOrder(theCustomer, "a", 2)
-
-    intercept[IllegalArgumentException] {
-      changeCurrency(o1, "SFO")
     }
   }
 
@@ -126,7 +118,7 @@ class OrderServiceSpec extends BasicSpec {
 
     val Good(o1) = createOrder(theCustomer, "a", 2)
     val Good(o2) = addItem(o1, "b", 3)
-    val theOrder = changeCurrency(o2, "USD")
+    val theOrder = changeCurrency(o2, Currency.USD)
 
     val maybeSale = checkout(theOrder)
 
@@ -139,7 +131,7 @@ class OrderServiceSpec extends BasicSpec {
     }
   }
 
-  it should "fail when the payment failes" in {
+  it should "fail when the payment fails" in {
 
     val Good(o1) = createOrder(theCustomer, "a", 2)
     val Good(theOrder) = addItem(o1, "b", 3)

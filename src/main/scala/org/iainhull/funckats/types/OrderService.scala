@@ -12,14 +12,14 @@ trait OrderService {
     * The productService is a function that takes a productId and quantity
     * returning a tuple of unit price and base currency.
     */
-  def productService: (String, Int) => (BigDecimal, String) Or OrderError
+  def productService: (String, Int) => (BigDecimal, Currency) Or OrderError
 
 
   /**
     * The payment service is a function that takes a customer, currency and
     * amount returning a Payment or an OrderError if there.
     */
-  def paymentService: (Customer, String, BigDecimal) => Payment Or OrderError
+  def paymentService: (Customer, Currency, BigDecimal) => Payment Or OrderError
 
 
   /**
@@ -90,8 +90,7 @@ trait OrderService {
     *
     * @return the converted order
     */
-  def changeCurrency(order: Order, newCurrency: String): Order = {
-    require(Currency.isValid(newCurrency))
+  def changeCurrency(order: Order, newCurrency: Currency): Order = {
 
     val convert = Currency.convert(order.currency, newCurrency) _
 
@@ -134,12 +133,12 @@ trait OrderService {
       .sum
   }
 
-  def calculateDelivery(items: Int, currency: String): BigDecimal = {
-    Currency.convert("USD", currency)(items * BigDecimal(2))
+  def calculateDelivery(items: Int, currency: Currency): BigDecimal = {
+    Currency.convert(Currency.USD, currency)(items * BigDecimal(2))
   }
 
   def creditCardRate(customer: Customer): BigDecimal = {
-    if (customer.preferredCurrency === "USD")
+    if (customer.preferredCurrency === Currency.USD)
       BigDecimal("0.015")
     else
       BigDecimal("0.025")

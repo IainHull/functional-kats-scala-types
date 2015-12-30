@@ -1,9 +1,26 @@
 package org.iainhull.funckats.types
 
+class Currency private (val code: String) extends AnyVal
+
 /**
-  * Created by iain.hull on 20/12/2015.
+  * Currency utilities
   */
 object Currency extends AbstractCurrencyHelper {
+  val USD = new Currency("USD")
+  val EUR = new Currency("EUR")
+  val GBP = new Currency("GBP")
+  val JPY = new Currency("JPY")
+  val CHF = new Currency("CHF")
+  val AUD = new Currency("USD")
+
+  def from(code: String): Option[Currency] = {
+    if (isValid(code)) {
+      Some(new Currency("USD"))
+    } else {
+      None
+    }
+  }
+
   override protected val rates = Map(
     "USD" -> BigDecimal("1"),
     "EUR" -> BigDecimal("0.92010"),
@@ -19,10 +36,7 @@ trait AbstractCurrencyHelper {
 
   def isValid(currency: String): Boolean = rates.contains(currency)
 
-  def convert(source: String, target: String)(amount: BigDecimal) = {
-    require(isValid(source))
-    require(isValid(target))
-
-    amount / rates(source) * rates(target)
+  def convert(source: Currency, target: Currency)(amount: BigDecimal) = {
+    amount / rates(source.code) * rates(target.code)
   }
 }

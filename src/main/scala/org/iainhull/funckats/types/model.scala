@@ -6,18 +6,15 @@ import org.scalactic.Requirements._
   * Created by iain.hull on 20/12/2015.
   */
 case class Customer(name: String,
-                    preferredCurrency: String) {
-  require(Currency.isValid(preferredCurrency))
-}
+                    preferredCurrency: Currency)
 
 case class Order(customer: Customer,
                  subtotal: BigDecimal,
                  shipping: BigDecimal,
-                 currency: String,
+                 currency: Currency,
                  items: Vector[OrderItem]) {
   require(subtotal >= 0)
   require(shipping >= 0)
-  require(Currency.isValid(currency))
   require(items.nonEmpty)
 }
 
@@ -35,7 +32,7 @@ case class Sale(order: Order,
   require(creditCardCharge >= 0)
 }
 
-case class Payment(currency: String, amount: BigDecimal, reference: String)
+case class Payment(currency: Currency, amount: BigDecimal, reference: String)
 
 trait OrderError
 
