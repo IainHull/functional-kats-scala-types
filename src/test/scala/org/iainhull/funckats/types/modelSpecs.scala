@@ -1,5 +1,7 @@
 package org.iainhull.funckats.types
 
+import org.iainhull.funckats.types.{Quantity, MoneyAmount}
+
 class CustomerSpec extends BasicSpec {
   "Customer.apply" should "not accept an invalid currency" in {
     intercept[IllegalArgumentException] {
@@ -59,11 +61,18 @@ class SaleSpec extends BasicSpec {
   val customer = Customer("Joe", "USD")
   val items = Vector(OrderItem("a", BigDecimal(1), 1))
   val order = Order(customer, 10, 0, "USD", items)
-  val payment = Payment("USD", 10, "Payment from joe")
+  val payment1 = Payment("EUR", 10, "Payment from joe")
+  val payment2 = Payment("USD", 10, "Payment from joe")
 
-  "Sale.apply" should "not accept an invalid creditCardCharge" in {
+  "Sale.apply" should "not accept an order and payment with different currencies" in {
     intercept[IllegalArgumentException] {
-      Sale(order, payment, -1)
+      Sale(order, payment1, 10)
+    }
+  }
+
+  it should "not accept an invalid creditCardCharge" in {
+    intercept[IllegalArgumentException] {
+      Sale(order, payment2, -1)
     }
   }
 }

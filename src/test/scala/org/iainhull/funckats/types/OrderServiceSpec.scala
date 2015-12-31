@@ -9,10 +9,10 @@ class OrderServiceSpec extends BasicSpec {
 
   object TestOrderService extends OrderService {
     val catalog = Map(
-      "a" ->(BigDecimal(10), "USD"),
-      "b" ->(BigDecimal(20), "USD"),
-      "c" ->(BigDecimal(30), "USD"),
-      "d" ->(BigDecimal(40), "USD"))
+      "a" -> ((BigDecimal(10), "USD")),
+      "b" -> ((BigDecimal(20), "USD")),
+      "c" -> ((BigDecimal(30), "USD")),
+      "d" -> ((BigDecimal(40), "USD")))
 
     override val productService = { (productId: String, quantity: Int) =>
       catalog.get(productId) match {
