@@ -1,6 +1,6 @@
 package org.iainhull.funckats.types
 
-import org.scalactic.{Good, Bad, Or}
+import org.scalactic.{Every, Good, Bad, Or}
 import org.scalactic.Requirements._
 
 class MoneyAmount private (val value: BigDecimal) extends AnyVal with WrappedValue[BigDecimal] {
@@ -43,9 +43,7 @@ case class Order(customer: Customer,
                  subtotal: MoneyAmount,
                  shipping: MoneyAmount,
                  currency: Currency,
-                 items: Vector[OrderItem]) {
-  require(items.nonEmpty)
-}
+                 items: Every[OrderItem])
 
 case class OrderItem(productId: String,
                      price: MoneyAmount,

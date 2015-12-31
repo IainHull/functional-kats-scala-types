@@ -1,6 +1,6 @@
 package org.iainhull.funckats.types
 
-import org.scalactic.{Bad, Good }
+import org.scalactic.{Every, Bad, Good}
 
 /**
   * Unit test for the OrderService
@@ -39,7 +39,7 @@ class OrderServiceSpec extends BasicSpec {
 
     val maybeOrder = createOrder(theCustomer, "a", Quantity(2))
     inside(maybeOrder) {
-      case Good(Order(customer, subtotal, shipping, currency, Vector(item))) =>
+      case Good(Order(customer, subtotal, shipping, currency, Every(item))) =>
         customer should be(theCustomer)
         subtotal should be(MoneyAmount("18.4020"))
         shipping should be(MoneyAmount("3.68040"))
@@ -61,7 +61,7 @@ class OrderServiceSpec extends BasicSpec {
     val maybeOrder = addItem(o1, "b", Quantity(3))
 
     inside(maybeOrder) {
-      case Good(Order(customer, subtotal, shipping, currency, Vector(i1, i2))) =>
+      case Good(Order(customer, subtotal, shipping, currency, Every(i1, i2))) =>
         customer should be(theCustomer)
         subtotal should be(MoneyAmount("73.608"))
         shipping should be(MoneyAmount("9.201000"))
@@ -91,7 +91,7 @@ class OrderServiceSpec extends BasicSpec {
     val order = changeCurrency(o1, Currency.USD)
 
     inside(order) {
-      case Order(customer, subtotal, shipping, currency, Vector(i1)) =>
+      case Order(customer, subtotal, shipping, currency, Every(i1)) =>
         customer should be(o1.customer)
         subtotal should be(convert(o1.subtotal))
         shipping should be(convert(o1.shipping))

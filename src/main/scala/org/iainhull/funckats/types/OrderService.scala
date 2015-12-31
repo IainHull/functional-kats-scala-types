@@ -1,6 +1,6 @@
 package org.iainhull.funckats.types
 
-import org.scalactic.Or
+import org.scalactic.{Every, Or}
 import org.scalactic.Requirements._
 import org.scalactic.TypeCheckedTripleEquals._
 
@@ -37,7 +37,7 @@ trait OrderService {
         val convert = Currency.convert(baseCurrency, customer.preferredCurrency) _
         val price = convert(basePrice)
 
-        val items = Vector(OrderItem(productId, price, quantity))
+        val items = Every(OrderItem(productId, price, quantity))
         val subTotal = calculateSubtotal(items)
 
         Order(
@@ -123,9 +123,7 @@ trait OrderService {
   }
 
 
-  def calculateSubtotal(items: Vector[OrderItem]): MoneyAmount = {
-    require(items.nonEmpty)
-
+  def calculateSubtotal(items: Every[OrderItem]): MoneyAmount = {
     items.foldLeft(MoneyAmount.Zero) { (sum, o) => sum + (o.price * o.quantity) }
   }
 
