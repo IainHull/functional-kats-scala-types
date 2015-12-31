@@ -1,7 +1,5 @@
 package org.iainhull.funckats.types
 
-import org.iainhull.funckats.types.{Quantity, MoneyAmount}
-
 class CustomerSpec extends BasicSpec {
   "Customer.apply" should "not accept an invalid currency" in {
     intercept[IllegalArgumentException] {
