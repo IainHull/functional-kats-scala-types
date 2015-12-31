@@ -24,17 +24,19 @@ class CurrencyServiceSpec extends BasicSpec {
   }
 
   it should "convert valid currencies" in {
-    convert(Currency.USD, Currency.USD)(BigDecimal("1")) should be(BigDecimal("1"))
-    convert(Currency.EUR, Currency.EUR)(BigDecimal("1")) should be(BigDecimal("1"))
-    convert(Currency.GBP, Currency.GBP)(BigDecimal("1")) should be(BigDecimal("1"))
+    import MoneyAmount.Unsafe._
 
-    convert(Currency.USD, Currency.EUR)(BigDecimal("1")) should be(BigDecimal("0.8"))
-    convert(Currency.EUR, Currency.USD)(BigDecimal("1")) should be(BigDecimal("1.25"))
+    convert(Currency.USD, Currency.USD)(MoneyAmount("1")) should be(MoneyAmount("1"))
+    convert(Currency.EUR, Currency.EUR)(MoneyAmount("1")) should be(MoneyAmount("1"))
+    convert(Currency.GBP, Currency.GBP)(MoneyAmount("1")) should be(MoneyAmount("1"))
 
-    convert(Currency.USD, Currency.GBP)(BigDecimal("1")) should be(BigDecimal("0.5"))
-    convert(Currency.GBP, Currency.USD)(BigDecimal("1")) should be(BigDecimal("2.0"))
+    convert(Currency.USD, Currency.EUR)(MoneyAmount("1")) should be(MoneyAmount("0.8"))
+    convert(Currency.EUR, Currency.USD)(MoneyAmount("1")) should be(MoneyAmount("1.25"))
 
-    convert(Currency.EUR, Currency.GBP)(BigDecimal("1")) should be(BigDecimal("0.625"))
-    convert(Currency.GBP, Currency.EUR)(BigDecimal("1")) should be(BigDecimal("1.6"))
+    convert(Currency.USD, Currency.GBP)(MoneyAmount("1")) should be(MoneyAmount("0.5"))
+    convert(Currency.GBP, Currency.USD)(MoneyAmount("1")) should be(MoneyAmount("2.0"))
+
+    convert(Currency.EUR, Currency.GBP)(MoneyAmount("1")) should be(MoneyAmount("0.625"))
+    convert(Currency.GBP, Currency.EUR)(MoneyAmount("1")) should be(MoneyAmount("1.6"))
   }
 }

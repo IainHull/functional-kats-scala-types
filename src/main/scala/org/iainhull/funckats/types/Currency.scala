@@ -37,7 +37,7 @@ trait AbstractCurrencyHelper {
 
   def isValid(currency: String): Boolean = rates.contains(currency)
 
-  def convert(source: Currency, target: Currency)(amount: BigDecimal) = {
-    amount / rates(source.code) * rates(target.code)
+  def convert(source: Currency, target: Currency)(amount: MoneyAmount) = {
+    MoneyAmount.from(amount.value / rates(source.code) * rates(target.code)).get
   }
 }

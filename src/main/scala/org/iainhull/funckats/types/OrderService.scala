@@ -12,14 +12,14 @@ trait OrderService {
     * The productService is a function that takes a productId and quantity
     * returning a tuple of unit price and base currency.
     */
-  def productService: (String, Int) => (BigDecimal, Currency) Or OrderError
+  def productService: (String, Quantity) => (MoneyAmount, Currency) Or OrderError
 
 
   /**
     * The payment service is a function that takes a customer, currency and
     * amount returning a Payment or an OrderError if there.
     */
-  def paymentService: (Customer, Currency, BigDecimal) => Payment Or OrderError
+  def paymentService: (Customer, Currency, MoneyAmount) => Payment Or OrderError
 
 
   /**
@@ -31,10 +31,7 @@ trait OrderService {
     *
     * @return the initial order or an OrderError if the
     */
-  def createOrder(customer: Customer, productId: String, quantity: Int): Order Or OrderError = {
-    require(quantity >= 0)
-
-
+  def createOrder(customer: Customer, productId: String, quantity: Quantity): Order Or OrderError = {
     productService(productId, quantity) map {
       case (basePrice, baseCurrency) =>
         val convert = Currency.convert(baseCurrency, customer.preferredCurrency) _
@@ -62,9 +59,7 @@ trait OrderService {
     *
     * @return the amended order or an OrderError if the product is not correct
     */
-  def addItem(order: Order, productId: String, quantity: Int): Order Or OrderError = {
-    require(quantity >= 0)
-
+  def addItem(order: Order, productId: String, quantity: Quantity): Order Or OrderError = {
     productService(productId, quantity) map {
       case (basePrice, baseCurrency) =>
 
@@ -120,21 +115,22 @@ trait OrderService {
       order.currency,
       order.subtotal + order.shipping)
 
+    val ccCharge = MoneyAmount.from(order.subtotal.value * creditCardRate(order.customer)).get
+
     maybePayment.map { p =>
-      Sale(order, p, order.subtotal * creditCardRate(order.customer))
+      Sale(order, p, ccCharge)
     }
   }
 
 
-  def calculateSubtotal(items: Vector[OrderItem]): BigDecimal = {
+  def calculateSubtotal(items: Vector[OrderItem]): MoneyAmount = {
     require(items.nonEmpty)
 
-    items.map { o => o.price * o.quantity }
-      .sum
+    items.foldLeft(MoneyAmount.Zero) { (sum, o) => sum + (o.price * o.quantity) }
   }
 
-  def calculateDelivery(items: Int, currency: Currency): BigDecimal = {
-    Currency.convert(Currency.USD, currency)(items * BigDecimal(2))
+  def calculateDelivery(items: Quantity, currency: Currency): MoneyAmount = {
+    Currency.convert(Currency.USD, currency)(MoneyAmount.from(2).get * items)
   }
 
   def creditCardRate(customer: Customer): BigDecimal = {
