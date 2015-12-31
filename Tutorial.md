@@ -98,3 +98,136 @@ class Currency private (val code: String) extends AnyVal {
   override def toString: String = s"Currency($code)"
 }
 ```
+
+## Step 2: MoneyAmount and Quantity
+
+```scala
+
+class MoneyAmount private (val value: BigDecimal) extends AnyVal {
+
+  def + (rhs: MoneyAmount): MoneyAmount = new MoneyAmount(value + rhs.value)
+
+  def * (rhs: Quantity) = new MoneyAmount(value * rhs.value)
+  def / (rhs: Quantity) = new MoneyAmount(value / rhs.value)
+}
+
+object MoneyAmount {
+  val Zero: MoneyAmount = new MoneyAmount(0)
+
+  def from(value: BigDecimal): MoneyAmount Or String = {
+    if (value >= 0) Good(new MoneyAmount(value))
+    else Bad(s"MoneyAmount($value) must be greater than or equal to zero")
+  }
+}
+
+class Quantity private (val value: Int) extends AnyVal
+
+object Quantity {
+  def from(value: Int): Quantity Or String = {
+    if (value > 0) Good(new Quantity(value))
+    else Bad(s"Quantity($value) must be greater than zero")
+  }
+}
+```
+
+Update sources and modelSpecs (delete lots of tests). Update the other tests (notice the how hard MoneyAmount is to use in the tests - this is not fun).
+
+Add the `EnableUnsafe` type class.
+
+```scala
+@implicitNotFound("Unsafe access not enabled for ${A}. import ${A}.Unsafe._")
+trait EnableUnsafe[A]
+
+object MoneyAmount {
+  // ...
+  
+  object Unsafe {
+    implicit object Enable extends EnableUnsafe[MoneyAmount]
+  }
+
+  def apply(value: BigDecimal)(implicit ev: EnableUnsafe[MoneyAmount]): MoneyAmount = {
+    from(value) match {
+      case Good(amount) => amount
+      case Bad(message) => throw new IllegalArgumentException(message)
+    }
+  }
+
+  def apply(value: String)(implicit ev: EnableUnsafe[MoneyAmount]): MoneyAmount = {
+    apply(BigDecimal(value))
+  }
+}
+```
+
+Simplify MoneyAmount constructors in the unit tests.
+
+## Step 3: WrapperValue
+
+Create WrapperValue.scala
+
+```scala
+package org.iainhull.funckats.types
+
+import org.scalactic.{Bad, Good, Or}
+
+import scala.annotation.implicitNotFound
+
+/**
+  * Base class for defining wrapper types, used in conjunction with
+  * `WrappedValue.Companion`
+  */
+trait WrappedValue[T] extends Any {
+  def value: T
+
+  override def toString = s"${this.getClass.getSimpleName}(${value})"
+}
+
+object WrappedValue {
+
+  trait Companion[A, W <: WrappedValue[A]] {
+
+    type ErrorMessage = String
+
+    def from(value: A): W Or ErrorMessage
+
+    def unapply(wrapped: W): Option[A] = Some(wrapped.value)
+
+    def apply(value: A)(implicit ev: EnableUnsafe[W]): W = {
+      from(value) match {
+        case Good(amount) => amount
+        case Bad(message) => throw new IllegalArgumentException(message)
+      }
+    }
+  }
+
+  @implicitNotFound("Unsafe access not enabled for ${B}. `import WrappedValue.Unsafe.enable` to enable it.")
+  trait EnableUnsafe[B]
+
+  object Unsafe {
+    implicit def enable[W]: EnableUnsafe[W] = new EnableUnsafe[W] {}
+  }
+}
+```
+
+* Update the wrapper types to use  `WrappedValue`.
+* Update `OrderServiceSpec` to use unsafe `Quantity` constructor.
+
+## Next
+
+
+
+
+```
+trait PositiveRate[-A] {
+  def asBigDecimal(value: A): BigDecimal
+}
+
+
+  def * [A](rhs: A)(implicit ev: PositiveRate[A]) = new MoneyAmount(value * ev.asBigDecimal(rhs))
+  def / [A](rhs: A)(implicit ev: PositiveRate[A]) = new MoneyAmount(value / ev.asBigDecimal(rhs))
+
+  implicit object ThePositiveRate extends PositiveRate[Quantity] {
+    def asBigDecimal(quantity: Quantity): BigDecimal = quantity.value
+  }
+
+```
+
