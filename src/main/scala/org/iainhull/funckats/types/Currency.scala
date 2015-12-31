@@ -1,5 +1,7 @@
 package org.iainhull.funckats.types
 
+import org.scalactic.{Bad, Good, Or}
+
 class Currency private (val code: String) extends AnyVal {
   override def toString: String = s"Currency($code)"
 }
@@ -15,12 +17,9 @@ object Currency extends AbstractCurrencyHelper {
   val CHF = new Currency("CHF")
   val AUD = new Currency("USD")
 
-  def from(code: String): Option[Currency] = {
-    if (isValid(code)) {
-      Some(new Currency("USD"))
-    } else {
-      None
-    }
+  def from(code: String): Currency Or String = {
+    if (isValid(code)) Good(new Currency("USD"))
+    else Bad(s"Currency($code) is an invalid code")
   }
 
   override protected val rates = Map(
