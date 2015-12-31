@@ -2,14 +2,15 @@ package org.iainhull.funckats.types
 
 import org.scalactic.{Bad, Good, Or}
 
-class Currency private (val code: String) extends AnyVal {
-  override def toString: String = s"Currency($code)"
+class Currency private (val value: String) extends AnyVal with WrappedValue[String] {
+  def code: String = value
 }
 
 /**
   * Currency utilities
   */
-object Currency extends AbstractCurrencyHelper {
+object Currency extends AbstractCurrencyHelper
+                with WrappedValue.Companion[String, Currency] {
   val USD = new Currency("USD")
   val EUR = new Currency("EUR")
   val GBP = new Currency("GBP")

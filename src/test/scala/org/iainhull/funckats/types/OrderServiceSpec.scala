@@ -6,7 +6,7 @@ import org.scalactic.{Bad, Good }
   * Unit test for the OrderService
   */
 class OrderServiceSpec extends BasicSpec {
-  import MoneyAmount.Unsafe._
+  import WrappedValue.Unsafe.enable
 
   object TestOrderService extends OrderService {
     val catalog = Map(
@@ -36,7 +36,8 @@ class OrderServiceSpec extends BasicSpec {
   val theCustomer = Customer("Joe Blogs", Currency.EUR)
 
   "createOrder" should "create an order when the product id is valid" in {
-    val maybeOrder = createOrder(theCustomer, "a", Quantity.from(2).get)
+
+    val maybeOrder = createOrder(theCustomer, "a", Quantity(2))
     inside(maybeOrder) {
       case Good(Order(customer, subtotal, shipping, currency, Vector(item))) =>
         customer should be(theCustomer)
@@ -45,19 +46,19 @@ class OrderServiceSpec extends BasicSpec {
         currency should be(Currency.EUR)
         item.productId should be("a")
         item.price should be(MoneyAmount("9.2010"))
-        item.quantity should be(Quantity.from(2).get)
+        item.quantity should be(Quantity(2))
     }
   }
 
   it should "fail to create an order when the product id is invalid" in {
-    val maybeOrder = createOrder(theCustomer, "bad product", Quantity.from(2).get)
+    val maybeOrder = createOrder(theCustomer, "bad product", Quantity(2))
     maybeOrder should be(Bad(InvalidProduct("bad product")))
   }
 
   "addItem" should "add an item to the order when the product id is valid" in {
 
-    val Good(o1) = createOrder(theCustomer, "a", Quantity.from(2).get)
-    val maybeOrder = addItem(o1, "b", Quantity.from(3).get)
+    val Good(o1) = createOrder(theCustomer, "a", Quantity(2))
+    val maybeOrder = addItem(o1, "b", Quantity(3))
 
     inside(maybeOrder) {
       case Good(Order(customer, subtotal, shipping, currency, Vector(i1, i2))) =>
@@ -67,17 +68,17 @@ class OrderServiceSpec extends BasicSpec {
         currency should be(Currency.EUR)
         i1.productId should be("a")
         i1.price should be(MoneyAmount("9.20100"))
-        i1.quantity should be(Quantity.from(2).get)
+        i1.quantity should be(Quantity(2))
         i2.productId should be("b")
         i2.price should be(MoneyAmount("18.4020"))
-        i2.quantity should be(Quantity.from(3).get)
+        i2.quantity should be(Quantity(3))
     }
   }
 
   it should "fail to create an order when the product id is invalid" in {
 
-    val Good(o1) = createOrder(theCustomer, "a", Quantity.from(2).get)
-    val maybeOrder = addItem(o1, "bad product", Quantity.from(2).get)
+    val Good(o1) = createOrder(theCustomer, "a", Quantity(2))
+    val maybeOrder = addItem(o1, "bad product", Quantity(2))
 
     maybeOrder should be(Bad(InvalidProduct("bad product")))
   }
@@ -85,7 +86,7 @@ class OrderServiceSpec extends BasicSpec {
   "changeCurrency" should "change the currency of an order applying the fx rate" in {
 
     val convert = Currency.convert(Currency.EUR, Currency.USD) _
-    val Good(o1) = createOrder(theCustomer, "a", Quantity.from(2).get)
+    val Good(o1) = createOrder(theCustomer, "a", Quantity(2))
 
     val order = changeCurrency(o1, Currency.USD)
 
@@ -103,8 +104,8 @@ class OrderServiceSpec extends BasicSpec {
 
   "checkout" should "return a sale when the payment is valid" in {
 
-    val Good(o1) = createOrder(theCustomer, "a", Quantity.from(2).get)
-    val Good(o2) = addItem(o1, "b", Quantity.from(3).get)
+    val Good(o1) = createOrder(theCustomer, "a", Quantity(2))
+    val Good(o2) = addItem(o1, "b", Quantity(3))
     val theOrder = changeCurrency(o2, Currency.USD)
 
     val maybeSale = checkout(theOrder)
@@ -120,8 +121,8 @@ class OrderServiceSpec extends BasicSpec {
 
   it should "fail when the payment fails" in {
 
-    val Good(o1) = createOrder(theCustomer, "a", Quantity.from(2).get)
-    val Good(theOrder) = addItem(o1, "b", Quantity.from(3).get)
+    val Good(o1) = createOrder(theCustomer, "a", Quantity(2))
+    val Good(theOrder) = addItem(o1, "b", Quantity(3))
 
     val maybeSale = checkout(theOrder)
 

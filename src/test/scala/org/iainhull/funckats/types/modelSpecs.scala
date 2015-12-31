@@ -1,6 +1,6 @@
 package org.iainhull.funckats.types
 
-import MoneyAmount.Unsafe._
+import WrappedValue.Unsafe.enable
 
 class OrderSpec extends BasicSpec {
   val customer = Customer("Joe", Currency.USD)

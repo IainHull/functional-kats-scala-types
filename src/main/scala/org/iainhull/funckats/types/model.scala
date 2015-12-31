@@ -3,12 +3,7 @@ package org.iainhull.funckats.types
 import org.scalactic.{Good, Bad, Or}
 import org.scalactic.Requirements._
 
-import scala.annotation.implicitNotFound
-
-@implicitNotFound("Unsafe access not enabled for ${A}. import ${A}.Unsafe._")
-trait EnableUnsafe[A]
-
-class MoneyAmount private (val value: BigDecimal) extends AnyVal {
+class MoneyAmount private (val value: BigDecimal) extends AnyVal with WrappedValue[BigDecimal] {
 
   def + (rhs: MoneyAmount): MoneyAmount = new MoneyAmount(value + rhs.value)
 
@@ -16,7 +11,7 @@ class MoneyAmount private (val value: BigDecimal) extends AnyVal {
   def / (rhs: Quantity) = new MoneyAmount(value / rhs.value)
 }
 
-object MoneyAmount {
+object MoneyAmount extends WrappedValue.Companion[BigDecimal, MoneyAmount] {
   val Zero: MoneyAmount = new MoneyAmount(0)
 
   def from(value: BigDecimal): MoneyAmount Or String = {
@@ -24,25 +19,14 @@ object MoneyAmount {
     else Bad(s"MoneyAmount($value) must be greater than or equal to zero")
   }
 
-  object Unsafe {
-    implicit object Enable extends EnableUnsafe[MoneyAmount]
-  }
-
-  def apply(value: BigDecimal)(implicit ev: EnableUnsafe[MoneyAmount]): MoneyAmount = {
-    from(value) match {
-      case Good(amount) => amount
-      case Bad(message) => throw new IllegalArgumentException(message)
-    }
-  }
-
-  def apply(value: String)(implicit ev: EnableUnsafe[MoneyAmount]): MoneyAmount = {
+  def apply(value: String)(implicit ev: WrappedValue.EnableUnsafe[MoneyAmount]): MoneyAmount = {
     apply(BigDecimal(value))
   }
 }
 
-class Quantity private (val value: Int) extends AnyVal
+class Quantity private (val value: Int) extends AnyVal with WrappedValue[Int]
 
-object Quantity {
+object Quantity extends WrappedValue.Companion[Int, Quantity] {
   def from(value: Int): Quantity Or String = {
     if (value > 0) Good(new Quantity(value))
     else Bad(s"Quantity($value) must be greater than zero")

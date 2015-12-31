@@ -24,7 +24,7 @@ class CurrencyServiceSpec extends BasicSpec {
   }
 
   it should "convert valid currencies" in {
-    import MoneyAmount.Unsafe._
+    import WrappedValue.Unsafe.enable
 
     convert(Currency.USD, Currency.USD)(MoneyAmount("1")) should be(MoneyAmount("1"))
     convert(Currency.EUR, Currency.EUR)(MoneyAmount("1")) should be(MoneyAmount("1"))
