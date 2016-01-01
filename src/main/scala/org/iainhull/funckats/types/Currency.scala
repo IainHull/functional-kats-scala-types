@@ -15,7 +15,7 @@ object Currency extends AbstractCurrencyHelper {
   val GBP = new Currency("GBP")
   val JPY = new Currency("JPY")
   val CHF = new Currency("CHF")
-  val AUD = new Currency("USD")
+  val AUD = new Currency("AUD")
 
   def from(code: String): Currency Or String = {
     if (isValid(code)) Good(new Currency("USD"))
