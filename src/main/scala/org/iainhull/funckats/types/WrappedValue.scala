@@ -30,6 +30,8 @@ object WrappedValue {
         case Bad(message) => throw new IllegalArgumentException(message)
       }
     }
+
+    implicit def ordering(implicit ord: Ordering[A]): Ordering[W] = Ordering.by(a => a.value)
   }
 
   @implicitNotFound("Unsafe access not enabled for ${B}. `import WrappedValue.Unsafe.enable` to enable it.")
