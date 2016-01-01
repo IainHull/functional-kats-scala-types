@@ -211,6 +211,42 @@ object WrappedValue {
 * Update the wrapper types to use  `WrappedValue`.
 * Update `OrderServiceSpec` to use unsafe `Quantity` constructor.
 
+## Step 4: Non Empty List
+
+Replace `Vector` in `Order` with scalactic `Every` (a non empty list with the same characteristics as `Vector`.
+
+## Step 5: Order
+
+Lets play in the REPL
+
+```scala
+$ sbt
+
+> console
+
+scala> import org.iainhull.funckats.types._
+
+scala> import WrappedValue.Unsafe.enable
+
+scala> Vector(2, 3, 1).sorted
+
+scala> Vector("B", "C", "A").sorted
+
+scala> Vector(Quantity(2), Quantity(3), Quantity(1)).sorted
+
+scala> Vector(Currency.USD, Currency.EUR, Currency.AUD).sorted
+```
+
+Look at the [`Vector.sorted` scaladoc](http://www.scala-lang.org/api/current/index.html#scala.collection.immutable.Vector@sorted[B>:A](implicitord:scala.math.Ordering[B]):Repr)
+
+Numbers and strings have an implicit ordering, add an implicit ordering to wrapper types, where the wrapped type has an implicit conversion.
+
+```scala
+    implicit def ordering(implicit ord: Ordering[A]): Ordering[W] = Ordering.by(a => a.value)
+```
+
+Now retry the REPL experiment.
+
 ## Next
 
 
