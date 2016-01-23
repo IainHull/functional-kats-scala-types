@@ -22,6 +22,11 @@ I am going to use git and IntelliJ IDE for the tutorial. Some of you will have s
 
 **Please download and configure your development environment before the meet-up. If everyone tries to download this at the same time on the night the wi-fi is going to be very slow.**
 
+### Java
+
+Scala is a JVM language you will need to install the [Java Development Kit](https://www.java.com/en/download/help/index_installing.xml) to follow this tutorial. If installing this for the first time select version 8.  You can also use version 7 if its installed already.
+
+
 ### Git
 
 The source code for this tutorial is available on [github](https://github.com/IainHull/functional-kats-scala-types). Ensure that git is installed on you local machine, there are [detailed instructions here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
@@ -81,7 +86,7 @@ scala> :quit
 Scala development ([download it here](http://scala-ide.org/download/sdk.html)).
 Or use their [update site](http://scala-ide.org/download/current.html).
 
-First use sbt to create the eclipse project files.  From the command line enter:
+First use `sbt` to create the eclipse project files.  From the command line enter:
 
 ```
 sbt eclipse
@@ -93,8 +98,8 @@ Now import the project into an eclipse workspace.
 Pull and run the functional-kats-scala-types docker image.  Be warned this image is about 800Mb, **download this in advance**.
 
 ```
-> docker pull iainhull/functional-kats-scala-types
-> docker run -it iainhull/functional-kats-scala-types
+docker pull iainhull/functional-kats-scala-types
+docker run -it iainhull/functional-kats-scala-types
 ```
 
 Now run sbt from the docker command-line.
